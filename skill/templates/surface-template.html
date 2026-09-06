@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentSurface</title>
+<style>
+:root{
+  --bg:#0b0d10;--panel:#13161c;--panel2:#181c24;--line:#232a36;
+  --text:#e8ecf2;--muted:#8b94a3;--accent:#4f8cff;--accent2:#7cf5c3;
+  --warn:#ffb454;--bad:#ff6b6b;--radius:10px;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.5;padding:24px;min-height:100vh}
+.wrap{max-width:720px;margin:0 auto}
+.wrap.wide{max-width:1080px}
+header.surf{margin-bottom:20px}
+header.surf h1{font-size:1.35rem;letter-spacing:-.02em}
+header.surf p{color:var(--muted);font-size:.9rem;margin-top:2px}
+.stack{display:flex}
+.stack.col{flex-direction:column}
+.stack.row{flex-direction:row}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+.card.tone-accent{border-color:var(--accent)}
+.card.tone-warn{border-color:var(--warn)}
+.card>.body{display:flex;flex-direction:column;gap:12px}
+.heading{font-weight:650;letter-spacing:-.01em}
+.text{color:var(--text);font-size:.92rem;white-space:pre-wrap}
+.muted{color:var(--muted)}
+.badge{display:inline-block;padding:2px 10px;border-radius:99px;font-size:.75rem;font-weight:600;background:var(--panel2);border:1px solid var(--line);color:var(--text)}
+.badge.tone-accent{color:var(--accent);border-color:var(--accent)}
+.badge.tone-warn{color:var(--warn);border-color:var(--warn)}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:.9rem}
+.kv:last-child{border-bottom:none}
+.kv .k{color:var(--muted)}
+.kv .v{font-weight:600;text-align:right;word-break:break-word}
+.stat{background:var(--panel2);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+.stat .label{color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.08em}
+.stat .value{font-size:1.6rem;font-weight:700;letter-spacing:-.02em}
+.stat .unit{color:var(--muted);font-size:.9rem;font-weight:400}
+.divider{border:none;border-top:1px solid var(--line)}
+.spacer{flex:none}
+img{max-width:100%;border-radius:var(--radius)}
+table.tbl{width:100%;border-collapse:collapse;font-size:.85rem}
+table.tbl th{color:var(--muted);text-align:left;font-weight:600;padding:7px 10px;border-bottom:1px solid var(--line)}
+table.tbl td{padding:7px 10px;border-bottom:1px solid var(--line)}
+table.tbl tr:last-child td{border-bottom:none}
+table.tbl.dense th,table.tbl.dense td{padding:4px 8px;font-size:.78rem}
+.form{display:flex;flex-direction:column;gap:12px}
+.field label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:5px;font-weight:600}
+.field input[type=text],.field textarea,.field select{
+  width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:8px;
+  color:var(--text);padding:9px 12px;font-family:var(--font);font-size:.9rem;outline:none}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent)}
+.field textarea{resize:vertical;min-height:70px}
+.field .sliderrow{display:flex;align-items:center;gap:10px}
+.field input[type=range]{flex:1;accent-color:var(--accent)}
+.field .rangeval{min-width:48px;text-align:right;font-weight:700;font-size:.9rem}
+.field.checkrow{display:flex;align-items:center;gap:9px;flex-direction:row}
+.field.checkrow label{margin:0}
+.field input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent)}
+.switch{position:relative;width:40px;height:22px;flex:none}
+.switch input{opacity:0;width:0;height:0}
+.switch .track{position:absolute;inset:0;background:var(--panel2);border:1px solid var(--line);border-radius:99px;transition:.15s;cursor:pointer}
+.switch .track:before{content:"";position:absolute;width:16px;height:16px;left:2px;top:2px;background:var(--muted);border-radius:50%;transition:.15s}
+.switch input:checked+.track{background:var(--accent);border-color:var(--accent)}
+.switch input:checked+.track:before{background:#fff;transform:translateX(18px)}
+.checkwrap{display:flex;flex-direction:column;gap:10px}
+button.act{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:11px 20px;font-family:var(--font);font-size:.92rem;font-weight:650;cursor:pointer;transition:.15s}
+button.act:hover{filter:brightness(1.12)}
+button.act:active{transform:scale(.98)}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap}
+.chart{display:flex;flex-direction:column;gap:6px}
+.chart .ct{color:var(--muted);font-size:.8rem;font-weight:600}
+.chart .bars{display:flex;align-items:flex-end;gap:8px;height:120px;padding-top:6px}
+.chart .bar{flex:1;background:var(--accent);border-radius:4px 4px 0 0;min-height:3px;position:relative}
+.chart .bar span{position:absolute;bottom:-18px;left:0;right:0;text-align:center;font-size:.68rem;color:var(--muted);white-space:nowrap}
+.chart .bvals{display:flex;gap:8px;padding-top:20px}
+.chart .bval{flex:1;text-align:center;font-size:.75rem;font-weight:700}
+.chart svg.line{width:100%;height:140px}
+.chart .legend{color:var(--muted);font-size:.72rem}
+.progress{display:flex;flex-direction:column;gap:5px}
+.progress .pt{display:flex;justify-content:space-between;font-size:.78rem}
+.progress .pt .pl{color:var(--muted)}
+.progress .pt .pv{font-weight:700}
+.progress .track{height:8px;background:var(--panel2);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+.progress .fill{height:100%;background:var(--accent2);border-radius:99px}
+.result{margin-top:20px;background:var(--panel2);border:1px solid var(--accent2);border-radius:var(--radius);padding:16px;display:none}
+.result.show{display:block}
+.result h3{font-size:.85rem;color:var(--accent2);margin-bottom:8px}
+.result pre{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;font-size:.78rem;overflow-x:auto;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.result .btnrow{margin-top:10px}
+footer.made{margin-top:22px;text-align:center;color:var(--muted);font-size:.72rem}
+footer.made code{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap" id="root"></div>
+<div class="wrap"><div class="result" id="result">
+<h3>Intent envelope — copy this back to the agent</h3>
+<pre id="envelope"></pre>
+<div class="btnrow"><button class="act" id="copyBtn">Copy envelope</button><button class="act" id="againBtn" style="background:var(--panel2);color:var(--text);border:1px solid var(--line)">Dismiss</button></div>
+</div></div>
+<footer class="made">AgentSurface v0.1 — ephemeral by design. Close the tab to dissolve. <code>annotate</code> any component by its id.</footer>
+<script>
+"use strict";
+const BLUEPRINT = __BLUEPRINT__;
+
+/* ---------- intent firewall ---------- */
+function checkIntent(name){
+  if(!Array.isArray(BLUEPRINT.intents) || BLUEPRINT.intents.indexOf(name)===-1){
+    throw new Error("Blocked by intent firewall: '"+name+"' is not whitelisted in this blueprint.");
+  }
+}
+
+/* ---------- input registry (bind -> element) ---------- */
+const inputs = {};
+
+/* ---------- renderers: all text via textContent, never innerHTML for payload strings ---------- */
+const T = {
+  Stack:(c,el)=>{ el.className="stack "+((c.props.direction==="row")?"row":"col"); el.style.gap=(c.props.gap||12)+"px"; },
+  Card:(c,el)=>{ el.className="card "+(c.props.tone?"tone-"+c.props.tone:""); const b=document.createElement("div"); b.className="body"; el.appendChild(b); return b; },
+  Form:(c,el)=>{ el.className="form"; return el; },
+  Text:(c,el)=>{ el.className="text"+((c.props.muted)?" muted":""); el.textContent=String(c.props.text??""); },
+  Heading:(c,el)=>{ const lv=Math.min(4,Math.max(1,Number(c.props.level||2))); el.className="heading"; el.style.fontSize={1:"1.2rem",2:"1.02rem",3:".92rem",4:".85rem"}[lv]; el.textContent=String(c.props.text??""); },
+  Badge:(c,el)=>{ el.className="badge "+(c.props.tone?"tone-"+c.props.tone:""); el.textContent=String(c.props.text??""); },
+  KeyValue:(c,el)=>{ el.className="kv"; const k=document.createElement("span");k.className="k";k.textContent=String(c.props.label??""); const v=document.createElement("span");v.className="v";v.textContent=String(c.props.value??""); el.appendChild(k);el.appendChild(v); },
+  Stat:(c,el)=>{ el.className="stat"; const l=document.createElement("div");l.className="label";l.textContent=String(c.props.label??""); const w=document.createElement("div");w.className="value"; w.textContent=String(c.props.value??""); if(c.props.unit){const u=document.createElement("span");u.className="unit";u.textContent=" "+c.props.unit;w.appendChild(u);} el.appendChild(l);el.appendChild(w); },
+  Divider:(c,el)=>{ el.className="divider"; el.style.borderTop="1px solid var(--line)"; },
+  Spacer:(c,el)=>{ el.className="spacer"; el.style.height=(Number(c.props.size)||16)+"px"; },
+  Image:(c,el)=>{ const i=document.createElement("img"); i.src=String(c.props.src||""); i.alt=String(c.props.alt||""); el.appendChild(i); },
+  Table:(c,el)=>{ const t=document.createElement("table"); t.className="tbl"+((c.props.dense)?" dense":""); const thead=document.createElement("thead"); const trh=document.createElement("tr"); (c.props.columns||[]).forEach(col=>{const th=document.createElement("th");th.textContent=String(col.label??"");trh.appendChild(th);}); thead.appendChild(trh); t.appendChild(thead); const tb=document.createElement("tbody"); (c.props.rows||[]).forEach(r=>{const tr=document.createElement("tr");(c.props.columns||[]).forEach(col=>{const td=document.createElement("td");td.textContent=(r&&r[col.key]!==undefined)?String(r[col.key]):"";tr.appendChild(td);});tb.appendChild(tr);}); t.appendChild(tb); el.appendChild(t); },
+  BarChart:(c,el)=>{ el.className="chart"; const ct=document.createElement("div");ct.className="ct";ct.textContent=String(c.props.title||"");el.appendChild(ct); const bars=document.createElement("div");bars.className="bars"; const vals=(c.props.series||[]); const max=Math.max.apply(null,vals.map(s=>Number(s.value)||0).concat([1])); vals.forEach(s=>{const b=document.createElement("div");b.className="bar";b.style.height=Math.round(((Number(s.value)||0)/max)*100)+"%";const sp=document.createElement("span");sp.textContent=String(s.label??"");b.appendChild(sp);bars.appendChild(b);}); el.appendChild(bars); const bv=document.createElement("div");bv.className="bvals"; vals.forEach(s=>{const d=document.createElement("div");d.className="bval";d.textContent=String(s.value??"");bv.appendChild(d);}); el.appendChild(bv); },
+  LineChart:(c,el)=>{ el.className="chart"; const ct=document.createElement("div");ct.className="ct";ct.textContent=String(c.props.title||"");el.appendChild(ct); const pts=(c.props.points||[]).map(Number); const W=640,H=140,P=10; if(pts.length){const max=Math.max.apply(null,pts),min=Math.min.apply(null,pts);const span=(max-min)||1; const svg="http://www.w3.org/2000/svg"; const s=document.createElementNS(svg,"svg");s.setAttribute("viewBox","0 0 "+W+" "+H);s.setAttribute("class","line"); const d=pts.map((p,i)=>{const x=P+(i*(W-2*P)/(pts.length-1||1));const y=H-P-((p-min)/span)*(H-2*P);return x.toFixed(1)+","+y.toFixed(1);}).join(" L "); const path=document.createElementNS(svg,"path");path.setAttribute("d","M "+d);path.setAttribute("fill","none");path.setAttribute("stroke","var(--accent)");path.setAttribute("stroke-width","2");s.appendChild(path); pts.forEach((p,i)=>{const x=P+(i*(W-2*P)/(pts.length-1||1));const y=H-P-((p-min)/span)*(H-2*P);const dot=document.createElementNS(svg,"circle");dot.setAttribute("cx",x);dot.setAttribute("cy",y);dot.setAttribute("r","3");dot.setAttribute("fill","var(--accent2)");s.appendChild(dot);}); el.appendChild(s);} if(Array.isArray(c.props.labels)){const lg=document.createElement("div");lg.className="legend";lg.textContent=c.props.labels.join(" · ");el.appendChild(lg);} },
+  ProgressBar:(c,el)=>{ el.className="progress"; const max=Number(c.props.max)||100, val=Number(c.props.value)||0; const pt=document.createElement("div");pt.className="pt"; const pl=document.createElement("span");pl.className="pl";pl.textContent=String(c.props.label??""); const pv=document.createElement("span");pv.className="pv";pv.textContent=val+" / "+max; pt.appendChild(pl);pt.appendChild(pv); el.appendChild(pt); const tr=document.createElement("div");tr.className="track"; const f=document.createElement("div");f.className="fill";f.style.width=Math.max(0,Math.min(100,(val/max)*100))+"%"; tr.appendChild(f); el.appendChild(tr); },
+  TextField:(c,el)=>{ el.className="field"; const l=document.createElement("label");l.textContent=String(c.props.label??"");el.appendChild(l); let i; if(c.props.multiline){i=document.createElement("textarea");}else{i=document.createElement("input");i.type="text";i.placeholder=String(c.props.placeholder||"");} i.value=String(bindVal(c)); el.appendChild(i); register(c,i); if(c.props.required)i.dataset.required="1"; },
+  Select:(c,el)=>{ el.className="field"; const l=document.createElement("label");l.textContent=String(c.props.label??"");el.appendChild(l); const s=document.createElement("select"); (c.props.options||[]).forEach(o=>{const op=document.createElement("option");const val=typeof o==="object"?String(o.value):String(o);const lab=typeof o==="object"?String(o.label):String(o);op.value=val;op.textContent=lab;if(val===String(bindVal(c)))op.selected=true;s.appendChild(op);}); el.appendChild(s); register(c,s); },
+  Slider:(c,el)=>{ el.className="field"; const l=document.createElement("label");l.textContent=String(c.props.label??"");el.appendChild(l); const row=document.createElement("div");row.className="sliderrow"; const i=document.createElement("input");i.type="range";i.min=String(c.props.min??"0");i.max=String(c.props.max??"100");i.step=String(c.props.step??"1");i.value=String(bindVal(c)); const v=document.createElement("span");v.className="rangeval";v.textContent=i.value; i.addEventListener("input",()=>{v.textContent=i.value;}); row.appendChild(i);row.appendChild(v); el.appendChild(row); register(c,i); },
+  Checkbox:(c,el)=>{ el.className="field checkrow"; const i=document.createElement("input");i.type="checkbox";i.checked=(bindVal(c)===true||bindVal(c)==="true"); const l=document.createElement("label");l.textContent=String(c.props.label??""); el.appendChild(i);el.appendChild(l); register(c,i); },
+  Toggle:(c,el)=>{ el.className="field checkrow"; const sw=document.createElement("label");sw.className="switch"; const i=document.createElement("input");i.type="checkbox";i.checked=(bindVal(c)===true||bindVal(c)==="true"); const tr=document.createElement("span");tr.className="track"; sw.appendChild(i);sw.appendChild(tr); const l=document.createElement("label");l.textContent=String(c.props.label??""); el.appendChild(sw);el.appendChild(l); register(c,i); },
+  Button:(c,el)=>{ const b=document.createElement("button");b.className="act";b.textContent=String(c.props.label??"Submit"); const a=c.props.action||{}; b.addEventListener("click",()=>fire(a)); el.appendChild(b); }
+};
+
+function bindVal(c){ const k=c.props.bind; return (BLUEPRINT.dataModel&&Object.prototype.hasOwnProperty.call(BLUEPRINT.dataModel,k))?BLUEPRINT.dataModel[k]:(c.props.value!==undefined?c.props.value:""); }
+function register(c,el){ if(c.props.bind){ inputs[c.props.bind]=el; } }
+
+/* ---------- tree build from flat adjacency list ---------- */
+function build(){
+  const comps=BLUEPRINT.components||[];
+  const byId={}; comps.forEach(c=>byId[c.id]=c);
+  const childOf={}; comps.forEach(c=>(c.children||[]).forEach(id=>childOf[id]=c.id));
+  let roots=comps.filter(c=>!childOf[c.id]);
+  if(roots.length===0) throw new Error("No root component found (cycle?).");
+  const root=roots[0];
+  const rootEl=document.getElementById("root");
+  if(BLUEPRINT.surface&&BLUEPRINT.surface.width==="wide")rootEl.classList.add("wide");
+  if(BLUEPRINT.surface){
+    const h=document.createElement("header");h.className="surf";
+    const t=document.createElement("h1");t.textContent=String(BLUEPRINT.surface.title||"");
+    h.appendChild(t);
+    if(BLUEPRINT.surface.subtitle){const p=document.createElement("p");p.textContent=String(BLUEPRINT.surface.subtitle);h.appendChild(p);}
+    rootEl.appendChild(h);
+  }
+  const node=render(root,byId);
+  rootEl.appendChild(node);
+}
+function render(c,byId){
+  const el=document.createElement("div");
+  el.dataset.cid=c.id;
+  let container=el;
+  const fn=T[c.type];
+  if(!fn) throw new Error("Unknown component type: "+c.type);
+  const inner=fn(c,el);
+  if(inner) container=inner;
+  (c.children||[]).forEach(id=>{
+    const child=byId[id];
+    if(!child) throw new Error("Missing child id: "+id);
+    container.appendChild(render(child,byId));
+  });
+  return el;
+}
+
+/* ---------- intent fire + envelope ---------- */
+function fire(action){
+  const intent=String(action.intent||"");
+  checkIntent(intent);
+  let keys=Array.isArray(action.payloadKeys)?action.payloadKeys.slice():Object.keys(inputs);
+  const values={};
+  keys.forEach(k=>{
+    const el=inputs[k];
+    if(!el) return;
+    if(el.type==="checkbox"){ values[k]=el.checked; }
+    else { values[k]=el.value; }
+  });
+  // required-check
+  let missing=[];
+  keys.forEach(k=>{const el=inputs[k];if(el&&el.dataset.required&&!String(el.value).trim())missing.push(k);});
+  if(missing.length){ alert("Required: "+missing.join(", ")); return; }
+  const envelope={surface:BLUEPRINT.surface?BLUEPRINT.surface.id:"s",intent:intent,values:values,ts:new Date().toISOString()};
+  show(envelope);
+  try{ window.parent.postMessage(JSON.stringify(envelope),"*"); }catch(e){}
+}
+function show(env){
+  const box=document.getElementById("result");
+  document.getElementById("envelope").textContent=JSON.stringify(env,null,2);
+  box.classList.add("show");
+  box.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+document.getElementById("copyBtn").addEventListener("click",function(){
+  const txt=document.getElementById("envelope").textContent;
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt);this.textContent="Copied ✓";}
+  else { const ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);this.textContent="Copied ✓"; }
+  const b=this;setTimeout(()=>{b.textContent="Copy envelope";},1600);
+});
+document.getElementById("againBtn").addEventListener("click",()=>document.getElementById("result").classList.remove("show"));
+
+build();
+</script>
+</body>
+</html>
