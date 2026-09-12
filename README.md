@@ -19,7 +19,35 @@ Markdown replies are the bottleneck. Google Research ("Generative UI: LLMs are E
 - `skill/references/dsl-spec.md` — the full contract (types, gates, envelope, security model)
 - `skill/scripts/validate_blueprint.py` — 8-gate validator (flatness, whitelist, binds, intents)
 - `skill/templates/surface-template.html` — the CSP-safe renderer
+- `mcp/server.py` — zero-dependency stdio MCP server (validate / scaffold / render)
+- `mcp/leaf_layer.py` — anchored leaf feedback layer
+- `mcp/test_mcp.py`, `mcp/test_leaf.py` — test harnesses
 - `demo/index.html` — live demo: audit scope picker (open it in a browser)
+- `demo/surface-leaf-demo.html` — live demo: leaf layer with anchored comments
+
+## MCP server
+
+`mcp/server.py` — a zero-dependency stdio MCP server (pure Python stdlib) that gives any local agent native UI emission over standard MCP:
+
+- `validate_blueprint` — the 8-gate validator, same contract as `skill/scripts/validate_blueprint.py`
+- `scaffold_blueprint` — deterministic starter surfaces (dashboard, form, taskboard, comparison)
+- `render_surface` — validate, inject into the CSP-safe template, return self-contained HTML. Pass `leaf: true` to enable anchored feedback.
+
+Wire it into any MCP client (Claude Code, OpenClaw gateway):
+
+```json
+{"mcpServers": {"agentsurface": {"command": "python3", "args": ["<repo>/mcp/server.py"]}}}
+```
+
+## Leaf layer
+
+`mcp/leaf_layer.py` — anchored-collaboration feedback, built natively (CSP-safe, zero network):
+
+- every rendered component gets a 🍃 pin, anchored to its blueprint id (`data-cid`)
+- comments pin to the component, not the page
+- the tray emits a `leaf_feedback` envelope `{surface, comments: [{componentId, text}], ts}` that pastes back into the agent's context — the same hydrate loop as intent envelopes
+
+Live demo: `demo/surface-leaf-demo.html` (also on GitHub Pages).
 
 ## Demo
 
