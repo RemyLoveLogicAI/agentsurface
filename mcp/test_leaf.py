@@ -1,6 +1,7 @@
-import json, subprocess
+import json, os, subprocess
 
-TEMPLATE = "/app/.agents/skills/agent-surface/templates/surface-template.html"
+HERE = os.path.dirname(os.path.abspath(__file__))
+TEMPLATE = os.path.join(HERE, "..", "skill", "templates", "surface-template.html")
 
 bp = {
     "surface": {"title": "LoveLogic Consulting — Ops", "subtitle": "leaf layer live test"},
@@ -17,7 +18,7 @@ msgs = [
     {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "t", "version": "0"}}},
     {"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {"name": "render_surface", "arguments": {"blueprint": bp, "leaf": True}}},
 ]
-proc = subprocess.run(["python3", "server.py", "--template", TEMPLATE],
+proc = subprocess.run(["python3", os.path.join(HERE, "server.py"), "--template", TEMPLATE],
     input="\n".join(json.dumps(m) for m in msgs), capture_output=True, text=True)
 resp = None
 for line in proc.stdout.strip().split("\n"):

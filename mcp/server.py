@@ -192,9 +192,9 @@ def scaffold(kind, title, data):
                 kcard["children"].append(cid)
             comps.append(kcard)
             comps[0]["children"] = comps[0].get("children", []) + ["kvcard"]
-        if len(comps) == 1:
+        if not stats and not kv:
             comps.append({"id": "empty", "type": "Text", "props": {"text": "No data provided.", "muted": True}})
-            comps[0]["children"] = ["empty"]
+            comps[0]["children"] = (["title"] if title else []) + ["empty"]
         return {"components": comps, "dataModel": {}, "intents": []}
 
     if kind == "form":
@@ -262,7 +262,10 @@ def render(bp, template_path):
         template = f.read()
     if "__BLUEPRINT__" not in template:
         raise GateError(0, "template is missing the __BLUEPRINT__ injection marker")
-    injected = json.dumps(bp).replace("</", "<\\/")
+    # json.dumps output only contains "<" inside string literals, so \u003c is a
+    # lossless escape. It also blocks "<!--" / "<script" script-data state tricks,
+    # not just "</script>".
+    injected = json.dumps(bp).replace("<", "\\u003c")
     return template.replace("__BLUEPRINT__", injected), report
 
 
@@ -390,7 +393,8 @@ def main():
     if "--template" in args:
         TEMPLATE_PATH = args[args.index("--template") + 1]
     if not TEMPLATE_PATH:
-        for cand in (os.path.join(script_dir, "..", "templates", "surface-template.html"),
+        for cand in (os.path.join(script_dir, "..", "skill", "templates", "surface-template.html"),
+                     os.path.join(script_dir, "..", "templates", "surface-template.html"),
                      os.path.join(script_dir, "templates", "surface-template.html")):
             if os.path.exists(cand):
                 TEMPLATE_PATH = os.path.abspath(cand)
@@ -406,7 +410,13 @@ def main():
             msg = json.loads(line)
         except Exception:
             continue
-        resp = handle(msg)
+        if not isinstance(msg, dict):
+            continue  # valid JSON but not a JSON-RPC request object
+        try:
+            resp = handle(msg)
+        except Exception as e:  # never let one bad message kill the stdio loop
+            resp = ({"jsonrpc": "2.0", "id": msg["id"], "error": {"code": -32603, "message": str(e)}}
+                    if msg.get("id") is not None else None)
         if resp is not None:
             sys.stdout.write(json.dumps(resp) + "\n")
             sys.stdout.flush()
