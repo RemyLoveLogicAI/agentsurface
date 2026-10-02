@@ -1,6 +1,7 @@
-import json, subprocess
+import json, os, subprocess
 
-TEMPLATE = "/app/.agents/skills/agent-surface/templates/surface-template.html"
+HERE = os.path.dirname(os.path.abspath(__file__))
+TEMPLATE = os.path.join(HERE, "..", "skill", "templates", "surface-template.html")
 
 valid_bp = {
     "components": [
@@ -38,7 +39,7 @@ msgs = [
 ]
 
 proc = subprocess.run(
-    ["python3", "server.py", "--template", TEMPLATE],
+    ["python3", os.path.join(HERE, "server.py"), "--template", TEMPLATE],
     input="\n".join(json.dumps(m) for m in msgs), capture_output=True, text=True)
 
 print("--- STDERR:", proc.stderr[:500])
